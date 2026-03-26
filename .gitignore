@@ -1,0 +1,60 @@
+# 环境变量（包含 API Key，绝不提交）
+.env
+.env.local
+.env.*.local
+
+# Python 缓存
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pyz
+.Python
+
+# 虚拟环境
+venv/
+.venv/
+env/
+ENV/
+.env/
+
+# 测试覆盖率
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+coverage.xml
+*.cover
+
+# 运行输出（每次运行生成的文件）
+output.json
+output.md
+experiments.tsv
+
+# macOS 系统文件
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 构建产物
+dist/
+build/
+*.egg-info/
+*.egg
+MANIFEST
+
+# 日志
+*.log
+logs/
+
+# 类型检查缓存
+.mypy_cache/
+.dmypy.json
+.pyright/
