@@ -27,6 +27,14 @@ from orchestrator import Orchestrator
 from search import DuckDuckGoSearchClient
 
 
+def _make_demo_llm() -> LLMClient:
+    """返回 MockLLMClient，用于 --demo 模式（无需真实 API Key）。"""
+    # 延迟导入，避免生产路径依赖 tests 目录
+    sys.path.insert(0, str(Path(__file__).parent / "tests"))
+    from mock_llm import MockLLMClient  # type: ignore
+    return MockLLMClient()
+
+
 def _load_dotenv() -> None:
     """加载项目根目录的 .env 文件（仅设置尚未存在的环境变量）。"""
     env_path = Path(__file__).parent / ".env"
@@ -72,22 +80,28 @@ def main():
                         help=f"审校通过的最低分数 (默认: {defaults.pass_threshold}，范围 1-100)")
     parser.add_argument("--description",   default="",
                         help="本次实验的描述，追加到 experiments.tsv")
+    parser.add_argument("--demo",           action="store_true",
+                        help="使用 Mock LLM 运行演示（无需真实 API Key，约 1 秒完成）")
     args = parser.parse_args()
 
-    # ── 初始化 LLM（严格模式：Key 缺失时立即报错）──
-    try:
-        llm_config = LLMConfig.from_env()
-    except ValueError as e:
-        print(e)
-        sys.exit(1)
-
-    llm = LLMClient(
-        api_key=llm_config.api_key,
-        base_url=llm_config.base_url,
-        model=llm_config.model,
-        api_style=llm_config.api_style,
-        client_config=LLMClientConfig(),
-    )
+    # ── 初始化 LLM ──
+    if args.demo:
+        llm = _make_demo_llm()
+        llm_model_name = "MockLLM (demo)"
+    else:
+        try:
+            llm_config = LLMConfig.from_env()
+        except ValueError as e:
+            print(e)
+            sys.exit(1)
+        llm = LLMClient(
+            api_key=llm_config.api_key,
+            base_url=llm_config.base_url,
+            model=llm_config.model,
+            api_style=llm_config.api_style,
+            client_config=LLMClientConfig(),
+        )
+        llm_model_name = llm_config.model
 
     print()
     print("╔══════════════════════════════════════════════════════╗")
@@ -98,7 +112,7 @@ def main():
     print(f"║  目标字数:   {args.words:<40} ║")
     print(f"║  最大修改:   {args.max_revisions:<40} ║")
     print(f"║  审校通过线: {args.pass_threshold:<40} ║")
-    print(f"║  模型:       {llm_config.model:<40} ║")
+    print(f"║  模型:       {llm_model_name:<40} ║")
     print(f"║  搜索:       {'DuckDuckGo 实时抓取':<40} ║")
     print("╚══════════════════════════════════════════════════════╝")
     print()
@@ -132,7 +146,7 @@ def main():
             result=result,
             topic=args.topic,
             word_count=args.words,
-            description=args.description or "production",
+            description=args.description or ("demo" if args.demo else "production"),
             execution_time=execution_time,
             pass_threshold=args.pass_threshold,
         )

@@ -44,14 +44,16 @@ DuckDuckGo 实时搜索    公众号风格写作 Prompt       公众号主编评
 
 ### 快速开始
 
-**1. 安装依赖**
+**1. 克隆并安装依赖**
 
 ```bash
-pip install -r requirements-dev.txt   # 包含测试工具
-# 或仅安装生产依赖
+git clone <repo-url>
+cd multi-agent
+
 pip install -r requirements.txt
-pip install ddgs   # DuckDuckGo 搜索库
 ```
+
+> 如需运行测试，改用 `pip install -r requirements-dev.txt`
 
 **2. 配置 API Key**
 
@@ -59,13 +61,29 @@ pip install ddgs   # DuckDuckGo 搜索库
 cp .env.example .env
 ```
 
-编辑 `.env`，填入你的 LLM API Key：
+编辑 `.env`，填入你的 LLM API Key，并取消注释对应服务商的配置块：
 
-```
+```bash
+# 必填
 LLM_API_KEY=your-api-key-here
+
+# 示例：使用 DeepSeek
+LLM_BASE_URL=https://api.deepseek.com/v1
+LLM_MODEL=deepseek-chat
+LLM_API_STYLE=openai
 ```
 
-**3. 运行**
+> 支持 Kimi、DeepSeek、OpenAI、Claude、Qwen、智谱 GLM、Ollama 等，
+> 完整配置示例见 [.env.example](.env.example) 和[支持的 LLM API](#支持的-llm-api) 章节。
+
+**3. 验证配置（可选）**
+
+```bash
+# 使用 Mock LLM 快速验证系统运行正常，无需真实 API Key
+python main.py --demo
+```
+
+**4. 运行**
 
 ```bash
 # 默认配置（AI 领域，深度分析，1000 字）
@@ -77,7 +95,7 @@ python main.py --topic 机器人 --pass-threshold 80
 python main.py --topic 大模型 --max-revisions 3 --output result.json
 ```
 
-**4. 查看结果**
+**5. 查看结果**
 
 ```
 output.md    # Markdown 文章（可直接复制到公众号编辑器）
@@ -124,19 +142,52 @@ class ReviewConfig:
 
 ### 支持的 LLM API
 
-通过 `.env` 配置切换，支持任意兼容 API：
+在 `.env` 中取消注释对应配置块即可切换，所有 OpenAI 兼容服务商均支持：
 
 ```bash
-# Anthropic Claude（默认 Kimi Code 格式）
+# Kimi Code（默认，Anthropic 格式）
 LLM_BASE_URL=https://api.kimi.com/coding/v1
 LLM_MODEL=kimi-for-coding
 LLM_API_STYLE=anthropic
 
-# OpenAI / DeepSeek / Qwen 等 OpenAI 兼容格式
+# Kimi（moonshot，OpenAI 兼容）
+LLM_BASE_URL=https://api.moonshot.cn/v1
+LLM_MODEL=moonshot-v1-8k
+LLM_API_STYLE=openai
+
+# DeepSeek
+LLM_BASE_URL=https://api.deepseek.com/v1
+LLM_MODEL=deepseek-chat
+LLM_API_STYLE=openai
+
+# OpenAI
 LLM_BASE_URL=https://api.openai.com/v1
 LLM_MODEL=gpt-4o
 LLM_API_STYLE=openai
+
+# Anthropic Claude
+LLM_BASE_URL=https://api.anthropic.com/v1
+LLM_MODEL=claude-3-5-sonnet-20241022
+LLM_API_STYLE=anthropic
+
+# Qwen（通义千问）
+LLM_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
+LLM_MODEL=qwen-plus
+LLM_API_STYLE=openai
+
+# 智谱 GLM
+LLM_BASE_URL=https://open.bigmodel.cn/api/paas/v4
+LLM_MODEL=glm-4-flash
+LLM_API_STYLE=openai
+
+# Ollama（本地部署）
+LLM_BASE_URL=http://localhost:11434/v1
+LLM_MODEL=llama3.2
+LLM_API_STYLE=openai
+LLM_API_KEY=ollama   # 不需要真实 Key，填任意字符串
 ```
+
+> 完整配置示例见 [.env.example](.env.example)
 
 ### 运行测试
 
@@ -148,7 +199,7 @@ python -m pytest -v
 python -m pytest --cov
 ```
 
-当前测试状态：**126/126 通过，覆盖率 85%**
+当前测试状态：**136/136 通过，覆盖率 94%**
 
 ### 项目结构
 
@@ -238,14 +289,16 @@ DuckDuckGo Live Search   WeChat-style Prompt      Editorial Review Criteria
 
 ### Quick Start
 
-**1. Install dependencies**
+**1. Clone and install dependencies**
 
 ```bash
-pip install -r requirements-dev.txt   # includes test tools
-# or production only
+git clone <repo-url>
+cd multi-agent
+
 pip install -r requirements.txt
-pip install ddgs   # DuckDuckGo search library
 ```
+
+> For running tests, use `pip install -r requirements-dev.txt` instead.
 
 **2. Configure API Key**
 
@@ -253,13 +306,29 @@ pip install ddgs   # DuckDuckGo search library
 cp .env.example .env
 ```
 
-Edit `.env` and fill in your LLM API Key:
+Edit `.env`, fill in your API Key and uncomment the block for your provider:
 
-```
+```bash
+# Required
 LLM_API_KEY=your-api-key-here
+
+# Example: DeepSeek
+LLM_BASE_URL=https://api.deepseek.com/v1
+LLM_MODEL=deepseek-chat
+LLM_API_STYLE=openai
 ```
 
-**3. Run**
+> Supports Kimi, DeepSeek, OpenAI, Claude, Qwen, Zhipu GLM, Ollama, and more.
+> See [.env.example](.env.example) and [Supported LLM APIs](#supported-llm-apis) for all options.
+
+**3. Verify setup (optional)**
+
+```bash
+# Run with Mock LLM to verify the system works without a real API Key
+python main.py --demo
+```
+
+**4. Run**
 
 ```bash
 # Default config (AI domain, deep analysis, 1000 words)
@@ -271,7 +340,7 @@ python main.py --topic "robotics" --pass-threshold 80
 python main.py --topic "LLM" --max-revisions 3 --output result.json
 ```
 
-**4. View results**
+**5. View results**
 
 ```
 output.md    # Markdown article (paste directly into WeChat editor)
@@ -318,19 +387,52 @@ class ReviewConfig:
 
 ### Supported LLM APIs
 
-Switch via `.env`, supports any compatible API:
+Uncomment the corresponding block in `.env` to switch providers. All OpenAI-compatible services are supported:
 
 ```bash
-# Anthropic Claude (default Kimi Code format)
+# Kimi Code (default, Anthropic format)
 LLM_BASE_URL=https://api.kimi.com/coding/v1
 LLM_MODEL=kimi-for-coding
 LLM_API_STYLE=anthropic
 
-# OpenAI / DeepSeek / Qwen (OpenAI-compatible)
+# Kimi (moonshot, OpenAI-compatible)
+LLM_BASE_URL=https://api.moonshot.cn/v1
+LLM_MODEL=moonshot-v1-8k
+LLM_API_STYLE=openai
+
+# DeepSeek
+LLM_BASE_URL=https://api.deepseek.com/v1
+LLM_MODEL=deepseek-chat
+LLM_API_STYLE=openai
+
+# OpenAI
 LLM_BASE_URL=https://api.openai.com/v1
 LLM_MODEL=gpt-4o
 LLM_API_STYLE=openai
+
+# Anthropic Claude
+LLM_BASE_URL=https://api.anthropic.com/v1
+LLM_MODEL=claude-3-5-sonnet-20241022
+LLM_API_STYLE=anthropic
+
+# Qwen
+LLM_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
+LLM_MODEL=qwen-plus
+LLM_API_STYLE=openai
+
+# Zhipu GLM
+LLM_BASE_URL=https://open.bigmodel.cn/api/paas/v4
+LLM_MODEL=glm-4-flash
+LLM_API_STYLE=openai
+
+# Ollama (local)
+LLM_BASE_URL=http://localhost:11434/v1
+LLM_MODEL=llama3.2
+LLM_API_STYLE=openai
+LLM_API_KEY=ollama   # No real key needed, any string works
 ```
+
+> See [.env.example](.env.example) for the full configuration template.
 
 ### Running Tests
 
@@ -342,7 +444,7 @@ python -m pytest -v
 python -m pytest --cov
 ```
 
-Current test status: **126/126 passing, 85% coverage**
+Current test status: **136/136 passing, 94% coverage**
 
 ### Project Structure
 

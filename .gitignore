@@ -30,6 +30,7 @@ coverage.xml
 output.json
 output.md
 experiments.tsv
+generated-images/
 
 # macOS 系统文件
 .DS_Store
