@@ -176,7 +176,7 @@ def main():
         output_path = Path(__file__).parent / args.output
         with open(output_path, "w", encoding="utf-8") as f:
             json.dump(output, f, ensure_ascii=False, indent=2)
-        print(f"\n完整结果已保存至: {output_path}")
+        print(f"\n完整结果已保存至: {output_path.name}")
 
         # 同时保存 Markdown 格式文章
         article = result.final_article
@@ -185,7 +185,7 @@ def main():
             f.write(f"# {article.get('title', '')}\n\n")
             f.write(article.get("content", ""))
             f.write("\n")
-        print(f"Markdown 文章已保存至: {md_path}")
+        print(f"Markdown 文章已保存至: {md_path.name}")
     else:
         print("\n工作流执行失败")
         sys.exit(1)
