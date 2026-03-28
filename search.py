@@ -75,8 +75,8 @@ class DuckDuckGoSearchClient:
                         seen_urls.add(r["url"])
                         all_results.append(r)
             except Exception as e:
-                # 单个关键词搜索失败不中断整体，但记录日志便于排查
-                _logger.warning("搜索关键词 %r 失败: %s", q, e)
+                # 单个关键词搜索失败不中断整体，记录 debug 日志
+                _logger.debug("搜索关键词 %r 失败: %s", q, e)
                 continue
 
         return all_results
