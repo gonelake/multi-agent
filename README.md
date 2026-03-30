@@ -199,18 +199,24 @@ python -m pytest -v
 python -m pytest --cov
 ```
 
-当前测试状态：**136/136 通过，覆盖率 94%**
+当前测试状态：**156/156 通过，覆盖率 94%**
 
-### Agent Skill（CodeBuddy Code 集成）
+### Agent Skill（多 Agent 集成）
 
-本系统提供 CodeBuddy Code skill，其他 agent 可一键安装后直接调用：
+本系统提供可跨 agent 使用的 skill，支持 **CodeBuddy Code、Claude Code、OpenClaw**，安装后 agent 看到写文章、生成新闻等需求时会自动加载并调用本系统。
 
 ```bash
-# 安装 skill
+# 自动检测本机已安装的 agent，逐一安装
 bash skills/install.sh
+
+# 或指定安装到特定 agent
+bash skills/install.sh --agent codebuddy   # CodeBuddy Code → ~/.codebuddy/skills/
+bash skills/install.sh --agent claude      # Claude Code   → ~/.claude/skills/
+bash skills/install.sh --agent openclaw   # OpenClaw      → ~/.openclaw/skills/
+bash skills/install.sh --agent all        # 强制安装到全部 agent
 ```
 
-安装后，在任意 CodeBuddy Code 会话中，agent 看到写文章、生成新闻等需求时会自动加载此 skill，按其中指引运行本系统。skill 文档位于 [`skills/multi-agent-writer/SKILL.md`](skills/multi-agent-writer/SKILL.md)。
+skill 文档位于 [`skills/multi-agent-writer/SKILL.md`](skills/multi-agent-writer/SKILL.md)。
 
 ---
 
@@ -461,18 +467,24 @@ python -m pytest -v
 python -m pytest --cov
 ```
 
-Current test status: **136/136 passing, 94% coverage**
+Current test status: **156/156 passing, 94% coverage**
 
-### Agent Skill (CodeBuddy Code Integration)
+### Agent Skill (Multi-Agent Integration)
 
-This system ships a CodeBuddy Code skill so other agents can invoke it directly:
+This system ships a skill compatible with **CodeBuddy Code, Claude Code, and OpenClaw**. Once installed, agents that encounter article-writing or news-generation requests will automatically load and invoke this system.
 
 ```bash
-# Install the skill
+# Auto-detect installed agents and install to each
 bash skills/install.sh
+
+# Or install to a specific agent
+bash skills/install.sh --agent codebuddy   # CodeBuddy Code → ~/.codebuddy/skills/
+bash skills/install.sh --agent claude      # Claude Code   → ~/.claude/skills/
+bash skills/install.sh --agent openclaw   # OpenClaw      → ~/.openclaw/skills/
+bash skills/install.sh --agent all        # Force install to all agents
 ```
 
-Once installed, any CodeBuddy Code agent that encounters article-writing or news-generation requests will automatically load the skill and follow its instructions to run this system. Skill documentation: [`skills/multi-agent-writer/SKILL.md`](skills/multi-agent-writer/SKILL.md).
+Skill documentation: [`skills/multi-agent-writer/SKILL.md`](skills/multi-agent-writer/SKILL.md).
 
 ---
 
