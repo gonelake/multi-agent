@@ -201,6 +201,19 @@ python -m pytest --cov
 
 当前测试状态：**136/136 通过，覆盖率 94%**
 
+### Agent Skill（CodeBuddy Code 集成）
+
+本系统提供 CodeBuddy Code skill，其他 agent 可一键安装后直接调用：
+
+```bash
+# 安装 skill
+bash skills/install.sh
+```
+
+安装后，在任意 CodeBuddy Code 会话中，agent 看到写文章、生成新闻等需求时会自动加载此 skill，按其中指引运行本系统。skill 文档位于 [`skills/multi-agent-writer/SKILL.md`](skills/multi-agent-writer/SKILL.md)。
+
+---
+
 ### 项目结构
 
 ```
@@ -215,6 +228,10 @@ multi-agent/
 ├── .env.example         # API Key 配置模板
 ├── requirements.txt     # 生产依赖
 ├── requirements-dev.txt # 开发/测试依赖
+├── skills/
+│   ├── install.sh                      # skill 一键安装脚本
+│   └── multi-agent-writer/
+│       └── SKILL.md                    # Agent skill 文档
 └── tests/
     ├── conftest.py
     ├── mock_llm.py          # 测试专用 MockLLMClient
@@ -446,6 +463,19 @@ python -m pytest --cov
 
 Current test status: **136/136 passing, 94% coverage**
 
+### Agent Skill (CodeBuddy Code Integration)
+
+This system ships a CodeBuddy Code skill so other agents can invoke it directly:
+
+```bash
+# Install the skill
+bash skills/install.sh
+```
+
+Once installed, any CodeBuddy Code agent that encounters article-writing or news-generation requests will automatically load the skill and follow its instructions to run this system. Skill documentation: [`skills/multi-agent-writer/SKILL.md`](skills/multi-agent-writer/SKILL.md).
+
+---
+
 ### Project Structure
 
 ```
@@ -460,6 +490,10 @@ multi-agent/
 ├── .env.example         # API Key config template
 ├── requirements.txt     # Production dependencies
 ├── requirements-dev.txt # Dev/test dependencies
+├── skills/
+│   ├── install.sh                      # One-command skill installer
+│   └── multi-agent-writer/
+│       └── SKILL.md                    # Agent skill documentation
 └── tests/
     ├── conftest.py
     ├── mock_llm.py          # MockLLMClient for testing
