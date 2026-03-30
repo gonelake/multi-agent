@@ -176,10 +176,11 @@ class TestInstallScript:
         assert result.returncode != 0
 
     def test_install_output_contains_success_message(self):
-        """安装成功时标准输出包含完成提示。"""
+        """安装成功时标准输出包含 skill 名称和目标 agent。"""
         os.makedirs(Path(self.tmp_home) / ".codebuddy", exist_ok=True)
         result = self._run()
-        assert "安装完成" in result.stdout or "installed" in result.stdout.lower()
+        assert "multi-agent-writer" in result.stdout
+        assert "codebuddy" in result.stdout
 
     # ── --agent 指定模式 ────────────────────────────────────
 
