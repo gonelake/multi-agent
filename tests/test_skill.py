@@ -219,19 +219,25 @@ class TestInstallScript:
 
     # ── 内容和幂等性 ────────────────────────────────────────
 
-    def test_installed_content_matches_source(self):
-        """安装后的文件内容与源文件一致。"""
+    def test_installed_skill_has_repo_substituted(self):
+        """安装后 SKILL.md 中的 <repo> 已被替换为实际路径（不再含占位符）。"""
         self._run(["--agent", "codebuddy"])
         content = self._dest("codebuddy").read_text(encoding="utf-8")
-        assert content == SKILL_MD.read_text(encoding="utf-8")
+        assert "<repo>" not in content, "安装后不应残留 <repo> 占位符"
+
+    def test_installed_skill_contains_real_path(self):
+        """安装后 SKILL.md 中含有 .multi-agent-writer 真实路径。"""
+        self._run(["--agent", "codebuddy"])
+        content = self._dest("codebuddy").read_text(encoding="utf-8")
+        assert ".multi-agent-writer" in content
 
     def test_install_idempotent(self):
-        """重复安装（幂等性）不报错，文件内容仍正确。"""
+        """重复安装（幂等性）不报错，SKILL.md 仍存在且无占位符。"""
         self._run(["--agent", "codebuddy"])
         result = self._run(["--agent", "codebuddy"])
         assert result.returncode == 0
         content = self._dest("codebuddy").read_text(encoding="utf-8")
-        assert content == SKILL_MD.read_text(encoding="utf-8")
+        assert "<repo>" not in content
 
     def test_install_creates_parent_dirs(self):
         """目标 skills 目录不存在时，安装能自动创建。"""
