@@ -1,6 +1,6 @@
 ---
 name: multi-agent-writer
-description: Use when you need to generate a high-quality AI news article — fetches real-time hotspots via DuckDuckGo, writes a WeChat-style article, and iterates through an automated review-revision cycle. Triggers include requests for "写文章", "生成新闻", "热点文章", "AI新闻", or any article generation task for a given topic/domain.
+description: Use when requests involve writing articles, generating news, fetching hotspots, or producing WeChat-style content for a given topic. Triggers include "写文章", "生成新闻", "热点文章", "AI新闻", or any article generation task.
 allowed-tools: Bash,Read
 ---
 
