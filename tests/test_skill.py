@@ -80,9 +80,9 @@ class TestSkillMdContent:
         """包含 demo 模式调用命令，方便 agent 快速验证。"""
         assert "--demo" in self.content
 
-    def test_contains_system_path(self):
-        """包含系统绝对路径，agent 可直接定位项目目录。"""
-        assert "/Users/landwei/Documents/AI/multi-agent" in self.content
+    def test_contains_repo_path_reference(self):
+        """包含项目路径引用（<repo>/ 或绝对路径），agent 可定位项目目录。"""
+        assert "<repo>" in self.content or "multi-agent" in self.content
 
     def test_contains_cli_params_table(self):
         """包含 CLI 参数说明表格。"""
@@ -123,7 +123,13 @@ class TestSkillMdContent:
 # ══════════════════════════════════════════════════════════
 
 class TestInstallScript:
-    """验证 install.sh 的安装行为，使用临时目录隔离，不影响真实 ~/.codebuddy。"""
+    """验证 install.sh 的安装行为，使用临时目录隔离，不影响真实环境。
+
+    支持的 agent 及目录：
+      codebuddy: ~/.codebuddy/skills/
+      claude:    ~/.claude/skills/
+      openclaw:  ~/.openclaw/skills/
+    """
 
     def setup_method(self):
         assert INSTALL_SH.exists(), f"install.sh 不存在: {INSTALL_SH}"
@@ -134,55 +140,103 @@ class TestInstallScript:
     def teardown_method(self):
         shutil.rmtree(self.tmp_home, ignore_errors=True)
 
-    def _run(self, env_overrides: dict = None) -> subprocess.CompletedProcess:
+    def _dest(self, agent: str) -> Path:
+        """返回指定 agent 的预期安装路径。"""
+        dirs = {
+            "codebuddy": ".codebuddy/skills",
+            "claude":    ".claude/skills",
+            "openclaw":  ".openclaw/skills",
+        }
+        return Path(self.tmp_home) / dirs[agent] / "multi-agent-writer" / "SKILL.md"
+
+    def _run(self, args: list = None, env_overrides: dict = None) -> subprocess.CompletedProcess:
         env = os.environ.copy()
         env["HOME"] = self.tmp_home
         if env_overrides:
             env.update(env_overrides)
-        return subprocess.run(
-            ["bash", str(INSTALL_SH)],
-            capture_output=True,
-            text=True,
-            env=env,
-        )
+        cmd = ["bash", str(INSTALL_SH)] + (args or [])
+        return subprocess.run(cmd, capture_output=True, text=True, env=env)
 
-    def test_install_succeeds(self):
-        """正常安装返回退出码 0。"""
+    # ── 自动检测模式 ────────────────────────────────────────
+
+    def test_auto_detects_existing_agents(self):
+        """自动模式下，仅安装到已存在配置目录的 agent。"""
+        # 只预建 codebuddy 的父目录
+        os.makedirs(Path(self.tmp_home) / ".codebuddy", exist_ok=True)
         result = self._run()
-        assert result.returncode == 0, f"安装失败:\n{result.stderr}"
+        assert result.returncode == 0
+        assert self._dest("codebuddy").exists(), "codebuddy 应被安装"
+        assert not self._dest("claude").exists(), "claude 未检测到，不应安装"
+        assert not self._dest("openclaw").exists(), "openclaw 未检测到，不应安装"
 
-    def test_install_creates_skill_file(self):
-        """安装后目标路径存在 SKILL.md。"""
-        self._run()
-        dest = Path(self.tmp_home) / ".codebuddy" / "skills" / "multi-agent-writer" / "SKILL.md"
-        assert dest.exists(), f"SKILL.md 未被安装到 {dest}"
-
-    def test_installed_content_matches_source(self):
-        """安装后的文件内容与源文件一致。"""
-        self._run()
-        dest = Path(self.tmp_home) / ".codebuddy" / "skills" / "multi-agent-writer" / "SKILL.md"
-        assert dest.read_text(encoding="utf-8") == SKILL_MD.read_text(encoding="utf-8")
+    def test_auto_no_agent_detected_fails(self):
+        """自动模式下，无任何已安装 agent 时退出码非零。"""
+        # tmp_home 全新，无任何 .codebuddy / .claude / .openclaw
+        result = self._run()
+        assert result.returncode != 0
 
     def test_install_output_contains_success_message(self):
         """安装成功时标准输出包含完成提示。"""
+        os.makedirs(Path(self.tmp_home) / ".codebuddy", exist_ok=True)
         result = self._run()
         assert "安装完成" in result.stdout or "installed" in result.stdout.lower()
 
+    # ── --agent 指定模式 ────────────────────────────────────
+
+    def test_install_specific_agent_codebuddy(self):
+        """--agent codebuddy 只安装到 codebuddy，不管目录是否存在。"""
+        result = self._run(["--agent", "codebuddy"])
+        assert result.returncode == 0
+        assert self._dest("codebuddy").exists()
+        assert not self._dest("claude").exists()
+        assert not self._dest("openclaw").exists()
+
+    def test_install_specific_agent_claude(self):
+        """--agent claude 只安装到 claude。"""
+        result = self._run(["--agent", "claude"])
+        assert result.returncode == 0
+        assert self._dest("claude").exists()
+        assert not self._dest("codebuddy").exists()
+
+    def test_install_specific_agent_openclaw(self):
+        """--agent openclaw 只安装到 openclaw。"""
+        result = self._run(["--agent", "openclaw"])
+        assert result.returncode == 0
+        assert self._dest("openclaw").exists()
+
+    def test_install_all_agents(self):
+        """--agent all 强制安装到所有 agent。"""
+        result = self._run(["--agent", "all"])
+        assert result.returncode == 0
+        for agent in ("codebuddy", "claude", "openclaw"):
+            assert self._dest(agent).exists(), f"{agent} 应被安装"
+
+    def test_install_invalid_agent_fails(self):
+        """指定不存在的 agent 名时退出码非零。"""
+        result = self._run(["--agent", "unknown-agent"])
+        assert result.returncode != 0
+
+    # ── 内容和幂等性 ────────────────────────────────────────
+
+    def test_installed_content_matches_source(self):
+        """安装后的文件内容与源文件一致。"""
+        self._run(["--agent", "codebuddy"])
+        content = self._dest("codebuddy").read_text(encoding="utf-8")
+        assert content == SKILL_MD.read_text(encoding="utf-8")
+
     def test_install_idempotent(self):
         """重复安装（幂等性）不报错，文件内容仍正确。"""
-        self._run()
-        result = self._run()
+        self._run(["--agent", "codebuddy"])
+        result = self._run(["--agent", "codebuddy"])
         assert result.returncode == 0
-        dest = Path(self.tmp_home) / ".codebuddy" / "skills" / "multi-agent-writer" / "SKILL.md"
-        assert dest.read_text(encoding="utf-8") == SKILL_MD.read_text(encoding="utf-8")
+        content = self._dest("codebuddy").read_text(encoding="utf-8")
+        assert content == SKILL_MD.read_text(encoding="utf-8")
 
     def test_install_creates_parent_dirs(self):
-        """即使 ~/.codebuddy/skills/ 目录不存在，安装也能自动创建。"""
-        # tmp_home 是全新目录，不含任何子目录
-        result = self._run()
+        """目标 skills 目录不存在时，安装能自动创建。"""
+        result = self._run(["--agent", "claude"])
         assert result.returncode == 0
-        dest_dir = Path(self.tmp_home) / ".codebuddy" / "skills" / "multi-agent-writer"
-        assert dest_dir.is_dir()
+        assert self._dest("claude").parent.is_dir()
 
     def test_install_fails_when_source_missing(self):
         """源 SKILL.md 不存在时，脚本以非零退出码报错。"""

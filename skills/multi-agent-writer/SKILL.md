@@ -13,7 +13,7 @@ allowed-tools: Bash,Read
 2. **文章撰写** — WriterAgent 生成微信公众号风格文章（含3组备选标题）
 3. **审校循环** — ReviewerAgent 按5维度打分，低于通过线则自动触发修改，最多 N 轮
 
-**系统位置：** `/Users/landwei/Documents/AI/multi-agent/`
+**系统位置：** 项目根目录（clone 后的本地路径，下文以 `<repo>/` 表示）
 
 ---
 
@@ -22,7 +22,7 @@ allowed-tools: Bash,Read
 ### Demo 模式（无需 API Key，约1秒完成）
 
 ```bash
-cd /Users/landwei/Documents/AI/multi-agent
+cd <repo>
 python main.py --demo
 python main.py --demo --topic "量子计算" --words 800
 ```
@@ -30,8 +30,21 @@ python main.py --demo --topic "量子计算" --words 800
 ### 生产模式（需要 `.env` 配置 LLM API Key）
 
 ```bash
-cd /Users/landwei/Documents/AI/multi-agent
+cd <repo>
 python main.py --topic "AI" --words 1000 --pass-threshold 85
+```
+
+### Skill 安装（供其他 agent 调用）
+
+```bash
+# 自动检测已安装的 agent（CodeBuddy Code / Claude Code / OpenClaw）
+bash skills/install.sh
+
+# 指定安装到特定 agent
+bash skills/install.sh --agent codebuddy
+bash skills/install.sh --agent claude
+bash skills/install.sh --agent openclaw
+bash skills/install.sh --agent all
 ```
 
 ---
@@ -89,7 +102,7 @@ python main.py --topic "AI" --words 1000 --pass-threshold 85
 
 ```python
 import sys
-sys.path.insert(0, "/Users/landwei/Documents/AI/multi-agent")
+sys.path.insert(0, "<repo>")  # 替换为实际项目路径
 
 from orchestrator import Orchestrator
 from base_agent import LLMClient
@@ -173,10 +186,10 @@ python main.py --demo --pass-threshold 90 --description "strict_90"
 python main.py --demo --pass-threshold 75 --description "loose_75"
 
 # 查看实验历史
-cat /Users/landwei/Documents/AI/multi-agent/experiments.tsv
+cat <repo>/experiments.tsv
 
 # 运行测试（验证系统完整性）
-cd /Users/landwei/Documents/AI/multi-agent && pytest
+cd <repo> && pytest
 ```
 
 ---
@@ -205,7 +218,7 @@ if len(title_val.strip()) <= 1 and title_val.strip().upper() in result.get("titl
 ## 关键文件路径
 
 ```
-/Users/landwei/Documents/AI/multi-agent/
+<repo>/
 ├── main.py           # CLI 入口
 ├── orchestrator.py   # 工作流协调器（Orchestrator.run()）
 ├── agents.py         # 3个业务智能体
@@ -214,6 +227,9 @@ if len(title_val.strip()) <= 1 and title_val.strip().upper() in result.get("titl
 ├── search.py         # DuckDuckGo 搜索封装
 ├── experiments.py    # 实验追踪（TSV）
 ├── .env              # API Key（严格模式，缺失则启动报错）
+├── skills/
+│   ├── install.sh    # Skill 安装脚本（支持多 agent）
+│   └── multi-agent-writer/SKILL.md
 └── tests/
     └── mock_llm.py   # MockLLMClient（demo模式使用）
 ```
