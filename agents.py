@@ -289,7 +289,7 @@ class WriterAgent(BaseAgent):
     "B": "观点型标题",
     "C": "利益型标题"
   },
-  "title": "从A/B/C中选最优的一个作为正式标题",
+  "title": "从titles中选最优标题的完整文字（直接复制标题文本，不要只写字母A/B/C）",
   "content": "文章正文（使用 Markdown 格式）",
   "word_count": 实际字数
 }"""
@@ -305,7 +305,7 @@ class WriterAgent(BaseAgent):
     "B": "观点型标题",
     "C": "利益型标题"
   },
-  "title": "从A/B/C中选最优的一个作为正式标题",
+  "title": "从titles中选最优标题的完整文字（直接复制标题文本，不要只写字母A/B/C）",
   "content": "修改后的文章正文（Markdown 格式）",
   "word_count": 实际字数
 }"""
@@ -407,6 +407,10 @@ class WriterAgent(BaseAgent):
             )
 
         result["revision"] = revision
+        # 防御性修复：title 为单字母(A/B/C)时，从 titles 字典取真实标题文本
+        title_val = result.get("title", "")
+        if len(title_val.strip()) <= 1 and title_val.strip().upper() in result.get("titles", {}):
+            result["title"] = result["titles"][title_val.strip().upper()]
         content = result.get("content", "")
         # 中文文章按字符数计（去除空白和标点），比 len() 更贴近"字数"概念
         actual_words = len(re.sub(r"[\s\W]", "", content))
